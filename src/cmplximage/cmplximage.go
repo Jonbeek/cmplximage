@@ -1,6 +1,6 @@
 // cmplximg provides simple ways of displaying functions of one complex number
 // as an image.
-package cmplximg
+package cmplximage
 
 import (
 	"image"
@@ -84,10 +84,11 @@ func RiemannMap(fnc ComplexMap) ColorMap {
 		val := fnc(point)
 		// Convert val to points on Riemann sphere, then set colors.
 		// All will be in range [-1,1]
-		div := 1.0 + cmplx.Abs(val)
+		add := math.Pow(cmplx.Abs(val), 2)
+		div := 1.0 + add
 		x := (2*real(val)) / div
 		y := (2*imag(val)) / div
-		z := (cmplx.Abs(val) - 1.0) / div
+		z := (add - 1.0) / div
 		// Now with the calculations out of the way, convert to standard color.
 		// Uniformly map from [-1,1] to [0,255]
 		r := math.Round(255 * ((x + 1) / 2))
