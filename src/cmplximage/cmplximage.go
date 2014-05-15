@@ -48,13 +48,13 @@ func (cr ComplexRect) left() float64 {
 }
 
 // ComplexMap is a function in the complex plane.
-type ComplexMap func(point complex128) (complex128)
+type ComplexMap func(point complex128) complex128
 
 // ColorMap maps a point on the complex plane to a color.
-type ColorMap func(point complex128) (color.Color)
+type ColorMap func(point complex128) color.Color
 
 // Draw creates an image of the function in the domain.
-func Draw(fnc ColorMap, size image.Rectangle, domain ComplexRectangle) image.Image {
+func Draw(fnc ColorMap, size image.Rectangle, domain *ComplexRect) image.Image {
 	size = size.Canon()
 	// Clever vector hack to move the Min corner to 0,0
 	size = size.Sub(size.Min)
@@ -63,18 +63,24 @@ func Draw(fnc ColorMap, size image.Rectangle, domain ComplexRectangle) image.Ima
 	// max x and y guaranteed to be size of rectangle
 	x := size.Dx()
 	y := size.Dy()
-	dx := domain.dx() / x
-	dy := domain.dy() / y
+	dx := domain.dx() / float64(x)
+	dy := domain.dy() / float64(y)
 	// Get the initial x vals
 	base_x := domain.left()
 	base_y := domain.bottom()
 	for i := 0; i <= x; i++ {
 		for j := 0; j <= y; j++ {
-			point := complex128(base_x + i*dx, base_y + j*dy)
+			point := complex(base_x+float64(i)*dx, base_y+float64(j)*dy)
 			img.Set(i, j, fnc(point))
 		}
 	}
 	return img
+}
+
+// Needed because Go doesn't have a floating point round function.
+// Either way, guaranteed to fit in a uint8 and be positive.
+func round(num float64) uint8 {
+	return uint8(math.Floor(num + 0.5))
 }
 
 // RiemannMap generates a ColorMap from a ComplexMap, using the Riemann sphere.
@@ -86,16 +92,15 @@ func RiemannMap(fnc ComplexMap) ColorMap {
 		// All will be in range [-1,1]
 		add := math.Pow(cmplx.Abs(val), 2)
 		div := 1.0 + add
-		x := (2*real(val)) / div
-		y := (2*imag(val)) / div
+		x := (2 * real(val)) / div
+		y := (2 * imag(val)) / div
 		z := (add - 1.0) / div
 		// Now with the calculations out of the way, convert to standard color.
 		// Uniformly map from [-1,1] to [0,255]
-		r := math.Round(255 * ((x + 1) / 2))
-		g := math.Round(255 * ((y + 1) / 2))
-		b := math.Round(255 * ((z + 1) / 2))
+		r := round(255 * ((x + 1) / 2))
+		g := round(255 * ((y + 1) / 2))
+		b := round(255 * ((z + 1) / 2))
 
-		return color.RGBA(r, g, b, 255)
+		return color.RGBA{r, g, b, 255}
 	}
 }
-
