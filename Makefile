@@ -1,10 +1,10 @@
 gopath = GOPATH=$(CURDIR)
 packages = cmplximage examples
 
-all: build
+all: install
 
-build: fmt
-	$(gopath) go build $(packages)
+install: fmt
+	$(gopath) go install $(packages)
 
 fmt:
 	$(gopath) go fmt $(packages)
