@@ -1,5 +1,5 @@
 gopath = GOPATH=$(CURDIR)
-packages = cmplximage examples
+packages = cmplximage examples/...
 
 all: install
 
